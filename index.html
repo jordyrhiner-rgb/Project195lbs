@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,6 +29,22 @@
 <body>
 
 <div class="dashboard">
+    <div class="card" style="border-bottom: 4px solid var(--primary);">
+        <div class="tile-header">Mission Progress</div>
+        <div style="display:flex; justify-content: space-between; align-items: center;">
+            <div>
+                <small style="color:#94a3b8; font-size:0.6rem;">START: 250 LBS</small>
+                <div class="stat-val" style="color:white;" id="currWeight">250.0</div>
+                <small style="color:#94a3b8; font-size:0.6rem;">CURRENT LBS</small>
+            </div>
+            <div style="text-align:right;">
+                <small style="color:#94a3b8; font-size:0.6rem;">TARGET: 195 LBS</small>
+                <div class="stat-val" id="left">55.0</div>
+                <small style="color:#94a3b8; font-size:0.6rem;">LBS TO GO</small>
+            </div>
+        </div>
+    </div>
+
     <div class="card">
         <div class="tile-header">Protocol <span id="dayTag">LOADING...</span></div>
         <h2 id="rTitle" style="margin:5px 0; font-size: 1.4rem;">Exercises</h2>
@@ -49,7 +67,7 @@
         </div>
         <div style="background:#0f172a; padding:12px; border-radius:12px; text-align:center; border: 1px solid #334155;">
              <small style="color:#94a3b8; font-size:0.6rem; font-weight:700;">EST. BODY FAT %</small>
-             <div class="stat-val" id="bfPercent">-- %</div>
+             <div class="stat-val" id="bfPercent">27.8 %</div>
         </div>
     </div>
 
@@ -66,17 +84,11 @@
             <option value="850">Metcon (Intensity)</option>
         </select>
         <input type="number" id="cals" value="0" placeholder="Calories Eaten" oninput="runMath()">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; text-align:center;">
-            <div style="background:#0f172a; padding:12px; border-radius:12px;">
-                <small style="color:#94a3b8; font-size:0.6rem;">DEFICIT</small>
+        <div style="background:#0f172a; padding:12px; border-radius:12px; text-align:center;">
+                <small style="color:#94a3b8; font-size:0.6rem;">DAILY DEFICIT</small>
                 <div class="stat-val" id="def">0</div>
-            </div>
-            <div style="background:#0f172a; padding:12px; border-radius:12px;">
-                <small style="color:#94a3b8; font-size:0.6rem;">LBS TO GO</small>
-                <div class="stat-val" id="left">55</div>
-            </div>
         </div>
-        <button class="btn" onclick="saveDay()" style="margin-top:20px; background:var(--cali);">Save Daily Progress</button>
+        <button class="btn" onclick="saveDay()" style="margin-top:20px; background:var(--cali);">Log New Weight</button>
     </div>
 </div>
 
@@ -122,6 +134,7 @@
         
         document.getElementById('def').innerText = (BMR + i + hB) - c;
         const h = JSON.parse(localStorage.getItem('p195_elite')) || [{w:250}];
+        document.getElementById('currWeight').innerText = parseFloat(h[0].w).toFixed(1);
         document.getElementById('left').innerText = (h[0].w - 195).toFixed(1);
 
         if(waist > 0 && neck > 0) {
