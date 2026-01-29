@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,6 +23,7 @@
         input, select { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 16px; box-sizing: border-box; }
         .btn { width: 100%; padding: 18px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; background: var(--primary); color: white; text-transform: uppercase; font-size: 1rem; }
         .stat-val { font-size: 1.4rem; font-weight: 800; color: var(--cali); }
+        .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         #dayTag { font-size: 0.7rem; background: var(--nerve); padding: 3px 8px; border-radius: 5px; margin-left: 10px; }
     </style>
 </head>
@@ -27,18 +31,33 @@
 
 <div class="dashboard">
     <div class="card">
-        <div class="tile-header">Today's Protocol <span id="dayTag">LOADING...</span></div>
+        <div class="tile-header">Protocol <span id="dayTag">LOADING...</span></div>
         <h2 id="rTitle" style="margin:5px 0; font-size: 1.4rem;">Exercises</h2>
-        <ul id="checkList" class="checklist">
-            <li style="color:#94a3b8;">Tap "Refresh Workout" below if empty...</li>
-        </ul>
+        <ul id="checkList" class="checklist"></ul>
         <div class="timer-display" id="timer">60:00</div>
         <button class="btn" onclick="toggleTimer()" id="tBtn">Start Timer</button>
-        <button onclick="updateWorkout()" style="background:none; border:none; color:var(--nerve); width:100%; margin-top:15px; font-size:0.8rem; text-decoration:underline;">Refresh Workout List</button>
     </div>
 
     <div class="card">
-        <div class="tile-header">Performance</div>
+        <div class="tile-header">Body Composition</div>
+        <div class="comp-grid">
+            <div>
+                <small style="color:#94a3b8; font-size:0.6rem; font-weight:700;">WAIST (IN)</small>
+                <input type="number" id="waistInput" value="0" step="0.1" oninput="runMath()">
+            </div>
+            <div>
+                <small style="color:#94a3b8; font-size:0.6rem; font-weight:700;">NECK (IN)</small>
+                <input type="number" id="neckInput" value="0" step="0.1" oninput="runMath()">
+            </div>
+        </div>
+        <div style="background:#0f172a; padding:12px; border-radius:12px; text-align:center; border: 1px solid #334155;">
+             <small style="color:#94a3b8; font-size:0.6rem; font-weight:700;">EST. BODY FAT %</small>
+             <div class="stat-val" id="bfPercent">-- %</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="tile-header">Daily Performance</div>
         <div class="habit-grid">
             <div class="habit-box" id="hBend" onclick="toggleHabit('hBend', 50)">BEND</div>
             <div class="habit-box" id="hFast" onclick="toggleHabit('hFast', 100)">FASTED</div>
@@ -56,20 +75,18 @@
                 <div class="stat-val" id="def">0</div>
             </div>
             <div style="background:#0f172a; padding:12px; border-radius:12px;">
-                <small style="color:#94a3b8; font-size:0.6rem;">LBS LEFT</small>
+                <small style="color:#94a3b8; font-size:0.6rem;">LBS TO GO</small>
                 <div class="stat-val" id="left">55</div>
             </div>
         </div>
-        <button class="btn" onclick="saveDay()" style="margin-top:20px; background:var(--cali);">Save Progress</button>
+        <button class="btn" onclick="saveDay()" style="margin-top:20px; background:var(--cali);">Save Daily Progress</button>
     </div>
 </div>
 
 <script>
-    // CORE VARIABLES
     let tS = 3600, tR = false, tI, hB = 0;
     const BMR = 2200;
 
-    // WORKOUT DATA
     const routines = [
         {t: "Active Recovery", type: "REST", e: ["Bend App: Full Body", "45 Min Walk", "Nerve Glides"]},
         {t: "Upper Body Strength", type: "CALI", e: ["Bend App: Posture", "Banded Rows: 4x12", "Incline Pushups: 3x12", "Face Pulls: 3x15"]},
@@ -103,9 +120,21 @@
     function runMath() {
         const c = parseInt(document.getElementById('cals').value) || 0;
         const i = parseInt(document.getElementById('iType').value);
-        const h = JSON.parse(localStorage.getItem('p195_elite')) || [{w:250}];
+        const waist = parseFloat(document.getElementById('waistInput').value) || 0;
+        const neck = parseFloat(document.getElementById('neckInput').value) || 0;
+        
+        // Deficit Logic
         document.getElementById('def').innerText = (BMR + i + hB) - c;
+
+        // Weight Logic
+        const h = JSON.parse(localStorage.getItem('p195_elite')) || [{w:250}];
         document.getElementById('left').innerText = (h[0].w - 195).toFixed(1);
+
+        // Simple Body Fat Estimate (US Navy Formula approximation for Men)
+        if(waist > 0 && neck > 0) {
+            let bf = 86.010 * Math.log10(waist - neck) - 70.041 * Math.log10(70) + 36.76;
+            document.getElementById('bfPercent').innerText = bf.toFixed(1) + " %";
+        }
     }
 
     function saveDay() {
@@ -116,7 +145,6 @@
         runMath();
     }
 
-    // RUN EVERYTHING ON START
     updateWorkout();
     runMath();
 </script>
