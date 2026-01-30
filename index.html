@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,8 +12,8 @@
         .tile-header { font-weight: 800; text-transform: uppercase; font-size: 0.7rem; color: #94a3b8; margin-bottom: 12px; border-left: 4px solid var(--nerve); padding-left: 10px; }
         .timer-display { font-size: 3.5rem; font-weight: 800; text-align: center; color: var(--primary); margin: 10px 0; }
         .habit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
-        .habit-box { background: #334155; padding: 10px; border-radius: 12px; text-align: center; font-size: 0.65rem; font-weight: 800; cursor: pointer; border: 2px solid transparent; }
-        .habit-box.active { background: #4c1d95; border-color: var(--nerve); }
+        .habit-box { background: #334155; padding: 10px; border-radius: 12px; text-align: center; font-size: 0.65rem; font-weight: 800; cursor: pointer; border: 2px solid transparent; color: #94a3b8; }
+        .habit-box.active { background: #4c1d95; border-color: var(--nerve); color: white; }
         .checklist { list-style: none; padding: 0; margin: 15px 0; }
         .checklist li { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #334155; font-size: 1rem; }
         .checklist input[type="checkbox"] { width: 24px; height: 24px; flex-shrink: 0; }
@@ -23,7 +21,7 @@
         .btn { width: 100%; padding: 18px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; background: var(--primary); color: white; text-transform: uppercase; font-size: 1rem; }
         .stat-val { font-size: 1.4rem; font-weight: 800; color: var(--cali); }
         .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        #dayTag { font-size: 0.7rem; background: var(--nerve); padding: 3px 8px; border-radius: 5px; margin-left: 10px; }
+        #dayTag { font-size: 0.7rem; background: var(--nerve); padding: 3px 8px; border-radius: 5px; margin-left: 10px; color: white; }
     </style>
 </head>
 <body>
@@ -67,7 +65,7 @@
         </div>
         <div style="background:#0f172a; padding:12px; border-radius:12px; text-align:center; border: 1px solid #334155;">
              <small style="color:#94a3b8; font-size:0.6rem; font-weight:700;">EST. BODY FAT %</small>
-             <div class="stat-val" id="bfPercent">27.8 %</div>
+             <div class="stat-val" id="bfPercent">-- %</div>
         </div>
     </div>
 
@@ -76,7 +74,7 @@
         <div class="habit-grid">
             <div class="habit-box" id="hBend" onclick="toggleHabit('hBend', 50)">BEND</div>
             <div class="habit-box" id="hFast" onclick="toggleHabit('hFast', 100)">FASTED</div>
-            <div class="habit-box" id="hShow" onclick="toggleHabit('hShow', 50)">SHOWER</div>
+            <div class="habit-box" id="hSupp" onclick="toggleHabit('hSupp', 50)">SUPPS</div>
         </div>
         <select id="iType" onchange="runMath()">
             <option value="0">Rest / Active Recovery</option>
