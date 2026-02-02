@@ -1,156 +1,81 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>P195: Elite Protocol</title>
-    <style>
-        :root { --bg: #0f172a; --card: #1e293b; --primary: #6366f1; --nerve: #a855f7; --cali: #22c55e; --text: #f8fafc; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
-        .dashboard { max-width: 600px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
-        .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #334155; box-shadow: 0 10px 15px rgba(0,0,0,0.3); }
-        .tile-header { font-weight: 800; text-transform: uppercase; font-size: 0.7rem; color: #94a3b8; margin-bottom: 12px; border-left: 4px solid var(--nerve); padding-left: 10px; }
-        .timer-display { font-size: 3.5rem; font-weight: 800; text-align: center; color: var(--primary); margin: 10px 0; }
-        .habit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
-        .habit-box { background: #334155; padding: 10px; border-radius: 12px; text-align: center; font-size: 0.65rem; font-weight: 800; cursor: pointer; border: 2px solid transparent; color: #94a3b8; }
-        .habit-box.active { background: #4c1d95; border-color: var(--nerve); color: white; }
-        .checklist { list-style: none; padding: 0; margin: 15px 0; }
-        .checklist li { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #334155; font-size: 1rem; }
-        .checklist input[type="checkbox"] { width: 24px; height: 24px; flex-shrink: 0; }
-        input, select { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 16px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 18px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; background: var(--primary); color: white; text-transform: uppercase; font-size: 1rem; }
-        .stat-val { font-size: 1.4rem; font-weight: 800; color: var(--cali); }
-        .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        #dayTag { font-size: 0.7rem; background: var(--nerve); padding: 3px 8px; border-radius: 5px; margin-left: 10px; color: white; }
-    </style>
-</head>
 <body>
-
 <div class="dashboard">
-    <div class="card" style="border-bottom: 4px solid var(--primary);">
-        <div class="tile-header">Mission Progress</div>
-        <div style="display:flex; justify-content: space-between; align-items: center;">
-            <div>
-                <small style="color:#94a3b8; font-size:0.6rem;">START: 250 LBS</small>
-                <div class="stat-val" style="color:white;" id="currWeight">250.0</div>
-                <small style="color:#94a3b8; font-size:0.6rem;">CURRENT LBS</small>
-            </div>
-            <div style="text-align:right;">
-                <small style="color:#94a3b8; font-size:0.6rem;">TARGET: 195 LBS</small>
-                <div class="stat-val" id="left">55.0</div>
-                <small style="color:#94a3b8; font-size:0.6rem;">LBS TO GO</small>
-            </div>
+    <div class="card" style="padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <small style="color:#94a3b8; font-size:0.6rem;">WEIGHT</small>
+            <div class="stat-val" style="color:white; font-size: 1.1rem;" id="currWeight">250.0</div>
+        </div>
+        <div style="text-align:center;">
+            <small style="color:#94a3b8; font-size:0.6rem;">DAILY DEFICIT GOAL</small>
+            <div class="stat-val" style="font-size: 1.1rem;">2200</div>
+        </div>
+        <div style="text-align:right;">
+            <small style="color:#94a3b8; font-size:0.6rem;">HYDRATION (OZ)</small>
+            <div class="stat-val" style="color:#38bdf8; font-size: 1.1rem;">125</div>
         </div>
     </div>
 
     <div class="card">
-        <div class="tile-header">Protocol <span id="dayTag">LOADING...</span></div>
-        <h2 id="rTitle" style="margin:5px 0; font-size: 1.4rem;">Exercises</h2>
-        <ul id="checkList" class="checklist"></ul>
+        <div class="tile-header">Session: <span id="rTitle">Loading...</span></div>
         <div class="timer-display" id="timer">60:00</div>
-        <button class="btn" onclick="toggleTimer()" id="tBtn">Start Timer</button>
+        <button class="btn" onclick="toggleTimer()" id="tBtn" style="margin-bottom: 20px;">Start Session</button>
+        
+        <div class="tile-header" style="border-color: var(--cali);">Task List</div>
+        <ul id="checkList" class="checklist"></ul>
     </div>
 
     <div class="card">
-        <div class="tile-header">Body Composition</div>
-        <div class="comp-grid">
-            <div>
-                <small style="color:#94a3b8; font-size:0.6rem; font-weight:700;">WAIST (IN)</small>
-                <input type="number" id="waistInput" value="0" step="0.1" oninput="runMath()">
-            </div>
-            <div>
-                <small style="color:#94a3b8; font-size:0.6rem; font-weight:700;">NECK (IN)</small>
-                <input type="number" id="neckInput" value="0" step="0.1" oninput="runMath()">
-            </div>
-        </div>
-        <div style="background:#0f172a; padding:12px; border-radius:12px; text-align:center; border: 1px solid #334155;">
-             <small style="color:#94a3b8; font-size:0.6rem; font-weight:700;">EST. BODY FAT %</small>
-             <div class="stat-val" id="bfPercent">-- %</div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="tile-header">Daily Performance</div>
         <div class="habit-grid">
-            <div class="habit-box" id="hBend" onclick="toggleHabit('hBend', 50)">BEND</div>
-            <div class="habit-box" id="hFast" onclick="toggleHabit('hFast', 100)">FASTED</div>
             <div class="habit-box" id="hSupp" onclick="toggleHabit('hSupp', 50)">SUPPS</div>
+            <div class="habit-box" id="hTRT" onclick="toggleHabit('hTRT', 0)">TRT PIN</div>
+            <div class="habit-box" id="hWater" onclick="toggleHabit('hWater', 0)">HYDRATED</div>
         </div>
-        <select id="iType" onchange="runMath()">
-            <option value="0">Rest / Active Recovery</option>
-            <option value="500">Calisthenics (Strength)</option>
-            <option value="850">Metcon (Intensity)</option>
-        </select>
-        <input type="number" id="cals" value="0" placeholder="Calories Eaten" oninput="runMath()">
-        <div style="background:#0f172a; padding:12px; border-radius:12px; text-align:center;">
-                <small style="color:#94a3b8; font-size:0.6rem;">DAILY DEFICIT</small>
-                <div class="stat-val" id="def">0</div>
-        </div>
-        <button class="btn" onclick="saveDay()" style="margin-top:20px; background:var(--cali);">Log New Weight</button>
+        <input type="number" id="cals" placeholder="Calories Eaten Today" oninput="runMath()">
+        <button class="btn" onclick="saveWeight()" style="background:var(--cali); margin-top:10px;">Log Weight</button>
     </div>
 </div>
 
 <script>
-    let tS = 3600, tR = false, tI, hB = 0;
-    const BMR = 2200;
+    let tS = 3600, tR = false, tI;
 
     const routines = [
-        {t: "Active Recovery", type: "REST", e: ["Bend App: Full Body", "45 Min Walk", "Nerve Glides"]},
-        {t: "Upper Body Strength", type: "CALI", e: ["Bend App: Posture", "Banded Rows: 4x12", "Incline Pushups: 3x12", "Face Pulls: 3x15"]},
-        {t: "High-Burn Metcon", type: "METCON", e: ["Shadow Boxing: 3 min", "Fast Air Squats: 4x20", "Fast Band Rows: 4x20", "High Knees: 1 min"]},
-        {t: "Active Recovery", type: "REST", e: ["Bend App: Desk Stretch", "30 Min Walk", "Nerve Glides"]},
-        {t: "Lower Body Strength", type: "CALI", e: ["Bend App: Hip Flow", "Air Squats: 4x20", "Lunges: 3x10/side", "Wall Sit: 3x45s"]},
-        {t: "Full Body Metcon", type: "METCON", e: ["Fast Squats: 45s", "Band Press: 45s", "Mountain Climbers: 45s", "Dead Bugs: 45s"]},
-        {t: "Core Stability", type: "CORE", e: ["Dead Bugs: 4x12", "Bird-Dogs: 3x10/side", "Side Planks: 30s/side", "Chin Tucks: 3x10"]}
+        {t: "Sun: Active Rest", e: ["45 Min Walk", "Stretch", "Prep Meals"]},
+        {t: "Mon: Calisthenics", e: ["Pushups: 4x12", "Inverted Rows: 4x10", "Dips: 3x10", "Plank: 3x1min"]},
+        {t: "Tue: Metcon", e: ["Shadow Box: 3m", "Air Squats: 4x25", "High Knees: 1m", "Burpees: 10"]},
+        {t: "Wed: Core/Cardio", e: ["Dead Bugs: 4x12", "Bird-Dogs: 3x10", "Side Plank: 30s", "30m Walk"]},
+        {t: "Thu: Calisthenics", e: ["Squats: 4x20", "Lunges: 3x12", "Wall Sit: 1min", "Calf Raises: 3x20"]},
+        {t: "Fri: Metcon", e: ["Mtn Climbers: 45s", "Burpees: 10", "Jumping Jacks: 1m", "Plank Jacks: 45s"]},
+        {t: "Sat: Active Rest", e: ["Mobility Flow", "30 Min Walk", "Foam Roll"]}
     ];
 
     function updateWorkout() {
         const day = new Date().getDay(); 
-        const today = routines[day];
-        document.getElementById('rTitle').innerText = today.t;
-        document.getElementById('dayTag').innerText = today.type;
-        document.getElementById('checkList').innerHTML = today.e.map(ex => `<li><input type="checkbox"> <span>${ex}</span></li>`).join('');
-    }
-
-    function toggleHabit(id, val) {
-        document.getElementById(id).classList.toggle('active');
-        hB += document.getElementById(id).classList.contains('active') ? val : -val;
-        runMath();
+        document.getElementById('rTitle').innerText = routines[day].t;
+        document.getElementById('checkList').innerHTML = routines[day].e.map(ex => 
+            `<li><input type="checkbox"> <span>${ex}</span></li>`).join('');
     }
 
     function toggleTimer() {
-        tR = !tR; document.getElementById('tBtn').innerText = tR ? "Pause" : "Resume";
-        if(tR) tI = setInterval(()=>{ tS--; let m=Math.floor(tS/60), s=tS%60; document.getElementById('timer').innerText=`${m}:${s<10?'0':''}${s}`; },1000);
-        else clearInterval(tI);
+        tR = !tR; 
+        document.getElementById('tBtn').innerText = tR ? "Pause" : "Resume";
+        if(tR) {
+            tI = setInterval(() => { 
+                tS--; 
+                let m = Math.floor(tS/60), s = tS%60; 
+                document.getElementById('timer').innerText = `${m}:${s<10?'0':''}${s}`;
+                if(tS <= 0) clearInterval(tI);
+            }, 1000);
+        } else clearInterval(tI);
     }
 
-    function runMath() {
-        const c = parseInt(document.getElementById('cals').value) || 0;
-        const i = parseInt(document.getElementById('iType').value);
-        const waist = parseFloat(document.getElementById('waistInput').value) || 0;
-        const neck = parseFloat(document.getElementById('neckInput').value) || 0;
-        
-        document.getElementById('def').innerText = (BMR + i + hB) - c;
-        const h = JSON.parse(localStorage.getItem('p195_elite')) || [{w:250}];
-        document.getElementById('currWeight').innerText = parseFloat(h[0].w).toFixed(1);
-        document.getElementById('left').innerText = (h[0].w - 195).toFixed(1);
-
-        if(waist > 0 && neck > 0) {
-            let bf = 86.010 * Math.log10(waist - neck) - 70.041 * Math.log10(70) + 36.76;
-            document.getElementById('bfPercent').innerText = bf.toFixed(1) + " %";
-        }
+    function saveWeight() {
+        const w = prompt("Current Weight:", "250");
+        if(w) localStorage.setItem('p195_lastWeight', w);
+        location.reload();
     }
 
-    function saveDay() {
-        const w = prompt("Current Weight (lbs):", "250"); if(!w) return;
-        const h = JSON.parse(localStorage.getItem('p195_elite')) || [];
-        h.unshift({ d: new Date().toLocaleDateString(), w: w });
-        localStorage.setItem('p195_elite', JSON.stringify(h.slice(0,10)));
-        runMath();
-    }
-
+    // Load Weight
+    document.getElementById('currWeight').innerText = localStorage.getItem('p195_lastWeight') || "250.0";
     updateWorkout();
-    runMath();
 </script>
 </body>
-</html>
