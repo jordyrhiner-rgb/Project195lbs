@@ -1,128 +1,163 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>P195: Elite Protocol</title>
+    <title>P195: Elite Tracker</title>
     <style>
-        :root { --bg: #020617; --card: rgba(30, 41, 59, 0.7); --primary: #6366f1; --nerve: #a855f7; --cali: #10b981; --text: #f8fafc; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: radial-gradient(circle at top right, #1e1b4b, #020617); color: var(--text); margin: 0; padding: 15px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-        .dashboard { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 15px; }
-        .card { background: var(--card); backdrop-filter: blur(12px); border-radius: 24px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
-        .tile-header { font-weight: 800; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--primary); margin-bottom: 12px; }
-        .timer-display { font-size: 4rem; font-weight: 900; text-align: center; margin: 10px 0; background: linear-gradient(to bottom, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .btn { width: 100%; padding: 18px; border: none; border-radius: 16px; font-weight: 800; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; transition: 0.2s; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--nerve)); color: white; }
-        .btn-secondary { background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; }
+        :root { --bg: #0f172a; --card: #1e293b; --primary: #6366f1; --nerve: #a855f7; --cali: #22c55e; --text: #f8fafc; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        .dashboard { max-width: 600px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
+        .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #334155; box-shadow: 0 10px 15px rgba(0,0,0,0.3); }
+        .tile-header { font-weight: 800; text-transform: uppercase; font-size: 0.7rem; color: #94a3b8; margin-bottom: 12px; border-left: 4px solid var(--nerve); padding-left: 10px; }
+        .timer-display { font-size: 3.5rem; font-weight: 800; text-align: center; color: var(--primary); margin: 10px 0; }
+        .habit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+        .habit-box { background: #334155; padding: 10px; border-radius: 12px; text-align: center; font-size: 0.65rem; font-weight: 800; cursor: pointer; border: 2px solid transparent; color: #94a3b8; }
+        .habit-box.active { background: #4c1d95; border-color: var(--nerve); color: white; }
         .checklist { list-style: none; padding: 0; margin: 15px 0; }
-        .checklist li { background: rgba(15, 23, 42, 0.4); margin-bottom: 8px; padding: 14px; border-radius: 14px; display: flex; align-items: center; gap: 12px; border: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
-        .habit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .habit-box { background: rgba(51, 65, 85, 0.4); padding: 12px; border-radius: 14px; text-align: center; font-size: 0.7rem; font-weight: 800; cursor: pointer; color: #94a3b8; border: 1px solid transparent; }
-        .habit-box.active { background: rgba(99, 102, 241, 0.2); border-color: var(--primary); color: white; }
-        input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.5); color: white; font-size: 1rem; margin-bottom: 10px; box-sizing: border-box; }
-        .history-list { font-size: 0.8rem; color: #94a3b8; width: 100%; border-collapse: collapse; }
-        .history-list th { text-align: left; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .history-list td { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .checklist li { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #334155; font-size: 1rem; }
+        .checklist input[type="checkbox"] { width: 24px; height: 24px; flex-shrink: 0; }
+        input { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 16px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 18px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; background: var(--primary); color: white; text-transform: uppercase; font-size: 1rem; transition: 0.2s; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .stat-val { font-size: 1.4rem; font-weight: 800; color: var(--cali); }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
-    <div class="card">
-        <div style="display:flex; justify-content: space-between; align-items: center;">
-            <div><small style="color:#94a3b8; font-size:0.6rem;">LBS</small><div id="currWeight" style="font-size:1.2rem; font-weight:800;">250.0</div></div>
-            <div style="text-align:center;"><small style="color:#94a3b8; font-size:0.6rem;">TARGET</small><div style="font-size:1.2rem; font-weight:800; color:var(--cali);">195.0</div></div>
-            <div style="text-align:right;"><small style="color:#94a3b8; font-size:0.6rem;">H2O</small><div style="font-size:1.2rem; font-weight:800; color:#38bdf8;">125 oz</div></div>
+    <div class="card" style="padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--primary);">
+        <div>
+            <small style="color:#94a3b8; font-size:0.6rem;">WEIGHT</small>
+            <div class="stat-val" style="color:white; font-size: 1.1rem;" id="currWeight">250.0</div>
+        </div>
+        <div style="text-align:center;">
+            <small style="color:#94a3b8; font-size:0.6rem;">GOAL DEFICIT</small>
+            <div class="stat-val" style="font-size: 1.1rem;">2200</div>
+        </div>
+        <div style="text-align:right;">
+            <small style="color:#94a3b8; font-size:0.6rem;">MIN WATER (OZ)</small>
+            <div class="stat-val" style="color:#38bdf8; font-size: 1.1rem;">125</div>
         </div>
     </div>
 
     <div class="card">
-        <div class="tile-header">60-MIN SESSION: <span id="dayLabel">...</span></div>
-        <h2 id="rTitle" style="margin: 0; font-size: 1.2rem; color: var(--nerve);">...</h2>
+        <div class="tile-header">Session: <span id="rTitle">Loading...</span></div>
         <div class="timer-display" id="timer">60:00</div>
-        <button class="btn btn-primary" onclick="toggleTimer()" id="tBtn">Start 60m Mission</button>
-        <button class="btn btn-secondary" id="restBtn" onclick="startRest()">Start 60s Rest</button>
+        
+        <button class="btn" onclick="toggleTimer()" id="tBtn">Start 60m Session</button>
+        <button class="btn" id="restBtn" onclick="startRest()" style="background:#475569; margin-top:10px;">Start 60s Rest</button>
+        
+        <div class="tile-header" style="border-color: var(--cali); margin-top:25px;">Task Checklist</div>
         <ul id="checkList" class="checklist"></ul>
     </div>
 
     <div class="card">
-        <div class="tile-header">DAILY LOG</div>
+        <div class="tile-header">Daily Progress</div>
         <div class="habit-grid">
-            <div class="habit-box" id="hSupp" onclick="toggleHabit('hSupp')">SUPPS</div>
-            <div class="habit-box" id="hWater" onclick="toggleHabit('hWater')">125oz H2O</div>
+            <div class="habit-box" id="hSupp" onclick="this.classList.toggle('active')">SUPPS</div>
+            <div class="habit-box" id="hTRT" onclick="this.classList.toggle('active')">TRT PIN</div>
+            <div class="habit-box" id="hWater" onclick="this.classList.toggle('active')">WATER+</div>
         </div>
-        <input type="number" id="weightIn" placeholder="Today's Weight">
-        <input type="number" id="calsIn" placeholder="Today's Calories">
-        <button class="btn btn-primary" onclick="logEntry()" style="background: var(--cali);">Save Daily Entry</button>
-    </div>
-
-    <div class="card">
-        <div class="tile-header">HISTORY</div>
-        <table class="history-list"><thead><tr><th>DATE</th><th>LBS</th><th>CALS</th></tr></thead><tbody id="historyBody"></tbody></table>
+        <input type="number" id="cals" placeholder="Calories Eaten Today">
+        <button class="btn" onclick="saveWeight()" style="background:var(--cali);">Log New Weight</button>
     </div>
 </div>
 
 <script>
     let timerInterval, restInterval;
+    const SESSION_DURATION = 3600; // 1 hour
+
     const routines = [
-        {t: "Active Recovery", d: "SUNDAY", e: ["60m Continuous Walk", "Magnesium 500mg", "Meal Prep Focus"]},
-        {t: "Upper Calisthenics", d: "MONDAY", e: ["Pushups: 5 sets to failure", "Inverted Rows: 5 sets", "Dips: 4 sets", "Plank: 5x1 min", "Banded Facepulls: 4x15"]},
-        {t: "High-Burn Metcon", d: "TUESDAY", e: ["Shadow Box: 10m", "Air Squats: 6x25", "High Knees: 5x1m", "Burpees: 4x12", "Mountain Climbers: 5m"]},
-        {t: "Core & Stability", d: "WEDNESDAY", e: ["Dead Bugs: 5x15", "Bird-Dogs: 5x12 per side", "Side Planks: 4x45s", "Glute Bridges: 4x20", "30m Zone 2 Walk (115bpm)"]},
-        {t: "Lower Calisthenics", d: "THURSDAY", e: ["Air Squats: 6x20", "Lunges: 5x12 per side", "Wall Sit: 4x1m", "Calf Raises: 5x20", "Box Step-ups: 5m"]},
-        {t: "Full Body Metcon", d: "FRIDAY", e: ["Jump Jacks: 5m", "Burpees: 5x10", "Plank Jacks: 5x1m", "Shadow Box: 10m", "Fast Walk: 15m"]},
-        {t: "Active Recovery", d: "SATURDAY", e: ["Mobility/Yoga: 30m", "Zone 2 Walk: 30m", "Foam Roll Muscles"]}
+        {t: "Sun: Active Rest", e: ["45 Min Walk", "Magnesium (500mg)", "Prep Meals"]},
+        {t: "Mon: Calisthenics", e: ["Pushups: 4x12", "Inverted Rows: 4x10", "Dips: 3x10", "Plank: 3x1min"]},
+        {t: "Tue: Metcon", e: ["Shadow Box: 3m", "Air Squats: 4x25", "High Knees: 1m", "Burpees: 10"]},
+        {t: "Wed: Core/Cardio", e: ["Dead Bugs: 4x12", "Bird-Dogs: 3x10", "Side Plank: 30s", "30m Walk"]},
+        {t: "Thu: Calisthenics", e: ["Squats: 4x20", "Lunges: 3x12", "Wall Sit: 1min", "Calf Raises: 3x20"]},
+        {t: "Fri: Metcon", e: ["Mtn Climbers: 45s", "Burpees: 10", "Jumping Jacks: 1m", "Plank Jacks: 45s"]},
+        {t: "Sat: Active Rest", e: ["Mobility Flow", "30 Min Walk", "Magnesium (500mg)"]}
     ];
 
     function updateWorkout() {
         const day = new Date().getDay(); 
         document.getElementById('rTitle').innerText = routines[day].t;
-        document.getElementById('dayLabel').innerText = routines[day].d;
-        document.getElementById('checkList').innerHTML = routines[day].e.map(ex => `<li><input type="checkbox"> <span>${ex}</span></li>`).join('');
+        document.getElementById('checkList').innerHTML = routines[day].e.map(ex => 
+            `<li><input type="checkbox"> <span>${ex}</span></li>`).join('');
     }
 
     function toggleTimer() {
-        const startTime = localStorage.getItem('p195_start');
+        const startTime = localStorage.getItem('sessionStartTime');
         if (!startTime) {
-            const now = Date.now(); localStorage.setItem('p195_start', now);
-            runInterval(now);
+            const now = Date.now();
+            localStorage.setItem('sessionStartTime', now);
+            startInterval(now);
+            document.getElementById('tBtn').innerText = "SESSION RUNNING";
+            document.getElementById('tBtn').style.background = "#ef4444";
         } else {
-            if(confirm("Reset session?")) { localStorage.removeItem('p195_start'); clearInterval(timerInterval); document.getElementById('timer').innerText = "60:00"; }
+            if(confirm("End session and reset timer?")) {
+                localStorage.removeItem('sessionStartTime');
+                clearInterval(timerInterval);
+                document.getElementById('timer').innerText = "60:00";
+                document.getElementById('tBtn').innerText = "START 60m SESSION";
+                document.getElementById('tBtn').style.background = "var(--primary)";
+            }
         }
     }
 
-    function runInterval(start) {
+    function startInterval(start) {
         clearInterval(timerInterval);
         timerInterval = setInterval(() => {
-            const rem = 3600 - Math.floor((Date.now() - start) / 1000);
-            if (rem <= 0) { document.getElementById('timer').innerText = "DONE"; return; }
-            document.getElementById('timer').innerText = `${Math.floor(rem/60)}:${(rem%60).toString().padStart(2,'0')}`;
+            const elapsed = Math.floor((Date.now() - start) / 1000);
+            const remaining = SESSION_DURATION - elapsed;
+            
+            if (remaining <= 0) {
+                document.getElementById('timer').innerText = "DONE";
+                document.getElementById('tBtn').innerText = "FINISH";
+                clearInterval(timerInterval);
+                return;
+            }
+
+            let m = Math.floor(remaining / 60), s = remaining % 60;
+            document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
         }, 1000);
     }
 
     function startRest() {
-        let r = 60; const b = document.getElementById('restBtn'); b.disabled = true;
+        let restLeft = 60;
+        const restBtn = document.getElementById('restBtn');
+        restBtn.disabled = true;
+        clearInterval(restInterval);
         restInterval = setInterval(() => {
-            r--; b.innerText = `REST: ${r}s`;
-            if (r <= 0) { clearInterval(restInterval); b.innerText = "Start 60s Rest"; b.disabled = false; }
+            restLeft--;
+            restBtn.innerText = `RESTING: ${restLeft}s`;
+            if (restLeft <= 0) {
+                clearInterval(restInterval);
+                restBtn.innerText = "START 60s REST";
+                restBtn.disabled = false;
+                alert("Rest Over - Get Back To Work");
+            }
         }, 1000);
     }
 
-    function toggleHabit(id) { document.getElementById(id).classList.toggle('active'); }
-
-    function logEntry() {
-        const w = document.getElementById('weightIn').value;
-        const c = document.getElementById('calsIn').value;
-        if (!w || !c) return alert("Enter weight and calories");
-        const history = JSON.parse(localStorage.getItem('p195_history') || "[]");
-        history.unshift({ date: new Date().toLocaleDateString(), weight: w, cals: c });
-        localStorage.setItem('p195_history', JSON.stringify(history.slice(0, 7)));
-        localStorage.setItem('p195_lastWeight', w);
-        location.reload();
+    function saveWeight() {
+        const w = prompt("Current Weight (lbs):", "250");
+        if(w) {
+            localStorage.setItem('p195_lastWeight', w);
+            document.getElementById('currWeight').innerText = parseFloat(w).toFixed(1);
+        }
     }
 
     window.onload = () => {
-        const history = JSON.parse(localStorage.getItem('p195_history') || "[]");
-        document.getElementById('historyBody').innerHTML = history.map(h => `<tr><td>${h.date}</td><td>${h.weight}</td><td>${h.cals}</td></tr>`).join('');
+        const savedStart = localStorage.getItem('sessionStartTime');
+        if (savedStart) {
+            startInterval(parseInt(savedStart));
+            document.getElementById('tBtn').innerText = "SESSION RUNNING";
+            document.getElementById('tBtn').style.background = "#ef4444";
+        }
         document.getElementById('currWeight').innerText = localStorage.getItem('p195_lastWeight') || "250.0";
-        const saved = localStorage.getItem('p195_start'); if (saved) run
+        updateWorkout();
+    };
+</script>
+</body>
+</html>
