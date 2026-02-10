@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,8 +12,13 @@
         .dashboard { max-width: 600px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
         .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #334155; box-shadow: 0 10px 15px rgba(0,0,0,0.3); }
         .tile-header { font-weight: 800; text-transform: uppercase; font-size: 0.7rem; color: #94a3b8; margin-bottom: 12px; border-left: 4px solid var(--nerve); padding-left: 10px; }
-        .timer-display { font-size: 3.5rem; font-weight: 800; text-align: center; color: var(--primary); margin: 10px 0; }
-        .habit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+        .timer-container { position: relative; width: 240px; height: 240px; margin: 25px auto; }
+        .timer-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3.8rem; font-weight: 800; color: var(--primary); text-align: center; width: 100%; }
+        .progress-ring { transform: rotate(-90deg); }
+        .progress-ring__circle-bg,
+        .progress-ring__circle { transition: stroke-dashoffset 0.4s ease-out; }
+        .progress-ring__circle { stroke-linecap: round; }
+        .habit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
         .habit-box { background: #334155; padding: 10px; border-radius: 12px; text-align: center; font-size: 0.65rem; font-weight: 800; cursor: pointer; border: 2px solid transparent; color: #94a3b8; }
         .habit-box.active { background: #4c1d95; border-color: var(--nerve); color: white; }
         .checklist { list-style: none; padding: 0; margin: 15px 0; }
@@ -44,7 +50,14 @@
 
     <div class="card">
         <div class="tile-header">Session: <span id="rTitle">Loading...</span></div>
-        <div class="timer-display" id="timer">60:00</div>
+        
+        <div class="timer-container">
+            <svg class="progress-ring" width="240" height="240" viewBox="0 0 240 240">
+                <circle class="progress-ring__circle-bg" stroke="#334155" stroke-width="16" fill="transparent" r="100" cx="120" cy="120"/>
+                <circle class="progress-ring__circle" stroke="var(--primary)" stroke-width="16" fill="transparent" r="100" cx="120" cy="120"/>
+            </svg>
+            <div class="timer-display" id="timer">60:00</div>
+        </div>
         
         <button class="btn" onclick="toggleTimer()" id="tBtn">Start 60m Session</button>
         <button class="btn" id="restBtn" onclick="startRest()" style="background:#475569; margin-top:10px;">Start 60s Rest</button>
@@ -59,6 +72,7 @@
             <div class="habit-box" id="hSupp" onclick="this.classList.toggle('active')">SUPPS</div>
             <div class="habit-box" id="hTRT" onclick="this.classList.toggle('active')">TRT PIN</div>
             <div class="habit-box" id="hWater" onclick="this.classList.toggle('active')">WATER+</div>
+            <div class="habit-box" id="hIF" onclick="this.classList.toggle('active')">IF 16:8</div>
         </div>
         <input type="number" id="cals" placeholder="Calories Eaten Today">
         <button class="btn" onclick="saveWeight()" style="background:var(--cali);">Log New Weight</button>
@@ -67,16 +81,18 @@
 
 <script>
     let timerInterval, restInterval;
-    const SESSION_DURATION = 3600; // 1 hour
+    const SESSION_DURATION = 3600; // 1 hour in seconds
+    const RADIUS = 100;
+    const CIRCUMFERENCE = 2 * Math.PI * RADIUS; // ~628.32
 
     const routines = [
-        {t: "Sun: Active Rest", e: ["45 Min Walk", "Magnesium (500mg)", "Prep Meals"]},
-        {t: "Mon: Calisthenics", e: ["Pushups: 4x12", "Inverted Rows: 4x10", "Dips: 3x10", "Plank: 3x1min"]},
-        {t: "Tue: Metcon", e: ["Shadow Box: 3m", "Air Squats: 4x25", "High Knees: 1m", "Burpees: 10"]},
-        {t: "Wed: Core/Cardio", e: ["Dead Bugs: 4x12", "Bird-Dogs: 3x10", "Side Plank: 30s", "30m Walk"]},
-        {t: "Thu: Calisthenics", e: ["Squats: 4x20", "Lunges: 3x12", "Wall Sit: 1min", "Calf Raises: 3x20"]},
-        {t: "Fri: Metcon", e: ["Mtn Climbers: 45s", "Burpees: 10", "Jumping Jacks: 1m", "Plank Jacks: 45s"]},
-        {t: "Sat: Active Rest", e: ["Mobility Flow", "30 Min Walk", "Magnesium (500mg)"]}
+        {t: "Sun: Active Rest", e: ["1-Mile Brisk Walk", "Band Mobility Flow (Shoulder Flossing + Monster Walks 2x20)", "Light Stretching 10-15 min", "Magnesium (500mg)", "Meal Prep / Recovery"]},
+        {t: "Mon: Calisthenics", e: ["Pushups (or Band Assisted): 4x10-15", "Inverted Rows or Band Rows: 4x10-12", "DB Goblet Squats: 4x12-15", "Band Tricep Extensions: 3x15", "Plank: 3x45-60s"]},
+        {t: "Tue: Calisthenics", e: ["Band Squat to Press: 4x12", "Single Arm DB Rows: 3x10-12 each side", "Walking Lunges (bodyweight or DB): 3x12 each leg", "Band Face Pulls: 4x15", "Superman Holds: 3x20-30s"]},
+        {t: "Wed: Core + Cardio", e: ["Dead Bugs (banded if possible): 4x12 each side", "Russian Twists with DB: 3x20 (10 each side)", "Side Plank: 3x30-45s each side", "Bird-Dogs: 3x10 each side", "20-30 Min Brisk Walk or Light Cardio"]},
+        {t: "Thu: Calisthenics", e: ["Diamond Pushups or Band Chest Press: 4x10-12", "Band Pull-Aparts: 4x15", "Bulgarian Split Squats (bodyweight or DB): 3x10 each leg", "Band Bicep Curls: 3x12", "Hollow Body Hold: 3x20-30s"]},
+        {t: "Fri: Calisthenics", e: ["Pike Pushups or Band Shoulder Press: 4x10-12", "Band Rows (seated or standing): 4x12", "Goblet Squat Holds (DB): 3x30-45s", "Band Lateral Raises: 3x15", "Plank Shoulder Taps: 3x20 each side"]},
+        {t: "Sat: Active Rest", e: ["1-Mile Brisk Walk", "Full Body Mobility Flow (hips, shoulders, spine)", "Light Band Stretching", "Magnesium (500mg)", "Focus on Recovery"]}
     ];
 
     function updateWorkout() {
@@ -84,6 +100,19 @@
         document.getElementById('rTitle').innerText = routines[day].t;
         document.getElementById('checkList').innerHTML = routines[day].e.map(ex => 
             `<li><input type="checkbox"> <span>${ex}</span></li>`).join('');
+    }
+
+    function updateProgress(remaining) {
+        const circle = document.querySelector('.progress-ring__circle');
+        const progressFraction = remaining / SESSION_DURATION;
+        const offset = CIRCUMFERENCE * progressFraction;
+        circle.style.strokeDashoffset = offset;
+
+        const progress = 1 - progressFraction;
+        let color = 'var(--primary)';
+        if (progress > 0.75) color = '#fbbf24'; // yellow
+        if (progress > 0.90) color = '#ef4444'; // red
+        circle.style.stroke = color;
     }
 
     function toggleTimer() {
@@ -99,6 +128,7 @@
                 localStorage.removeItem('sessionStartTime');
                 clearInterval(timerInterval);
                 document.getElementById('timer').innerText = "60:00";
+                updateProgress(SESSION_DURATION);
                 document.getElementById('tBtn').innerText = "START 60m SESSION";
                 document.getElementById('tBtn').style.background = "var(--primary)";
             }
@@ -109,17 +139,21 @@
         clearInterval(timerInterval);
         timerInterval = setInterval(() => {
             const elapsed = Math.floor((Date.now() - start) / 1000);
-            const remaining = SESSION_DURATION - elapsed;
+            let remaining = SESSION_DURATION - elapsed;
             
             if (remaining <= 0) {
+                remaining = 0;
                 document.getElementById('timer').innerText = "DONE";
                 document.getElementById('tBtn').innerText = "FINISH";
+                updateProgress(0);
                 clearInterval(timerInterval);
                 return;
             }
 
-            let m = Math.floor(remaining / 60), s = remaining % 60;
+            let m = Math.floor(remaining / 60);
+            let s = remaining % 60;
             document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            updateProgress(remaining);
         }, 1000);
     }
 
@@ -149,12 +183,27 @@
     }
 
     window.onload = () => {
+        const circle = document.querySelector('.progress-ring__circle');
+        circle.style.strokeDasharray = CIRCUMFERENCE;
+        updateProgress(SESSION_DURATION); // Initial full offset
+
         const savedStart = localStorage.getItem('sessionStartTime');
         if (savedStart) {
+            const now = Date.now();
+            const elapsed = Math.floor((now - parseInt(savedStart)) / 1000);
+            const remaining = SESSION_DURATION - elapsed;
+
+            let m = Math.floor(remaining / 60);
+            let s = remaining % 60;
+            document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+
+            updateProgress(remaining);
+
             startInterval(parseInt(savedStart));
             document.getElementById('tBtn').innerText = "SESSION RUNNING";
             document.getElementById('tBtn').style.background = "#ef4444";
         }
+
         document.getElementById('currWeight').innerText = localStorage.getItem('p195_lastWeight') || "250.0";
         updateWorkout();
     };
